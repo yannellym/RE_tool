@@ -1,9 +1,10 @@
 import os
 import pandas as pd
-from flask import Flask, request, redirect, url_for, send_from_directory, render_template
+from flask import Flask, request, render_template, send_from_directory
 from datetime import datetime
 
 app = Flask(__name__)
+
 UPLOAD_FOLDER = 'uploads'
 CONVERTED_FOLDER = 'converted'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -45,10 +46,10 @@ def process_files(files):
 def upload_files():
     if request.method == 'POST':
         if 'files[]' not in request.files:
-            return redirect(request.url)
+            return render_template('index.html')
         files = request.files.getlist('files[]')
         if not files or any(file.filename == '' for file in files):
-            return redirect(request.url)
+            return render_template('index.html')
         if all(file.filename.endswith('.csv') for file in files):
             saved_files = []
             for file in files:
@@ -57,14 +58,10 @@ def upload_files():
                 saved_files.append(file_path)
             processed_file_path = process_files(saved_files)
             if processed_file_path:
-                return redirect(url_for('download_file', filename=os.path.basename(processed_file_path)))
+                return render_template('success.html', download_link=f'/download/{os.path.basename(processed_file_path)}')
     return render_template('index.html')
 
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-@app.route('/converted/<filename>')
+@app.route('/download/<filename>')
 def download_file(filename):
     return send_from_directory(CONVERTED_FOLDER, filename)
 
