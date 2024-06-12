@@ -1,9 +1,9 @@
 services:
   - type: web
-    name: my-re-tool-app
+    name: my-flask-app
     env: python
-    buildCommand: ""
-    startCommand: gunicorn -b 0.0.0.0:10000 app:app
+    buildCommand: "apt-get update && apt-get install -y build-essential && pip install -r requirements.txt"
+    startCommand: "gunicorn -b 0.0.0.0:10000 app:app"
     envVars:
       - key: FLASK_ENV
         value: production
