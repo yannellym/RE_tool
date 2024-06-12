@@ -1,4 +1,0 @@
-[build]
-  command = "source $HOME/.python_venv/myenv/bin/activate && pip install -r requirements.txt && python app.py"
-  publish = "converted"
-  environment = { PYTHON_VERSION = "3.8" }
