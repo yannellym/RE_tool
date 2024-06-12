@@ -8,14 +8,16 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Set work directory
+# Set the working directory
 WORKDIR /app
 
-# Install python dependencies
+# Copy the requirements.txt first to leverage Docker cache
 COPY requirements.txt .
+
+# Install python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the application code
+# Copy the rest of the application code
 COPY . .
 
 # Expose the port and run the application
