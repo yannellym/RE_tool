@@ -65,5 +65,11 @@ def upload_files():
 def download_file(filename):
     return send_from_directory(CONVERTED_FOLDER, filename)
 
+# Add the following lines to use Gunicorn
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Use Gunicorn to serve the Flask app
+    # -b 0.0.0.0:$PORT tells Gunicorn to bind to the port provided by Netlify
+    # app:app specifies the Flask app and its name
+    from werkzeug.middleware.proxy_fix import ProxyFix
+    app.wsgi_app = ProxyFix(app.wsgi_app)
+    app.run()
