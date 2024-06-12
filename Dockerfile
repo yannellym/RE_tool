@@ -1,11 +1,12 @@
 FROM python:3.11-slim
 
-# Install build dependencies
+# Install system dependencies required by numpy
 RUN apt-get update && apt-get install -y \
     build-essential \
     libatlas-base-dev \
     gfortran \
     python3-dev \
+    libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory

@@ -2,9 +2,3 @@ services:
   - type: web
     name: my-flask-app
     env: docker
-    dockerfilePath: Dockerfile
-    envVars:
-      - key: FLASK_ENV
-        value: production
-      - key: PORT
-        value: 10000
