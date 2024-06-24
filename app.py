@@ -18,6 +18,8 @@ def process_files(file_paths):
     all_data = []
     
     for file_path in file_paths:
+        print(f"Processing file: {file_path}")  # Print the file path being processed
+        
         try:
             if file_path.endswith('.csv'):
                 data = pd.read_csv(file_path)
@@ -52,6 +54,10 @@ def process_files(file_paths):
                 required_columns = ['Full_Address', 'First Name', 'Last Name', 'Phone 1']
                 data_selected = data.rename(columns=column_mapping)[required_columns]
                 
+                # Handle missing 'Phone 1' column by filling with 'N/A'
+                if 'Phone 1' not in data_selected.columns:
+                    data_selected['Phone 1'] = 'N/A'
+                
                 all_data.append(data_selected)
                 
             else:
@@ -63,9 +69,9 @@ def process_files(file_paths):
     if all_data:
         combined_data = pd.concat(all_data, ignore_index=True)
         
-        # Save filtered data to CSV
+        # Save combined data to CSV
         current_date = datetime.now().strftime('%Y-%m-%d')
-        output_file_path = os.path.join(CONVERTED_FOLDER, f'filtered_data_{current_date}.csv')
+        output_file_path = os.path.join(CONVERTED_FOLDER, f'combined_data_{current_date}.csv')
         
         combined_data.to_csv(output_file_path, index=False)
         
@@ -74,26 +80,32 @@ def process_files(file_paths):
     return None
 
 
-
 @app.route('/', methods=['GET', 'POST'])
 def upload_files():
     if request.method == 'POST':
         if 'files[]' not in request.files:
             return render_template('index.html', message="No files selected")
+        
         files = request.files.getlist('files[]')
+        
         if not files or any(file.filename == '' for file in files):
             return render_template('index.html', message="No files selected")
+        
         if all(file.filename.endswith(('.csv', '.xlsx')) for file in files):
             saved_files = []
             for file in files:
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
                 file.save(file_path)
                 saved_files.append(file_path)
+            
             processed_file_path = process_files(saved_files)
+            
             if processed_file_path:
                 return send_from_directory(CONVERTED_FOLDER, os.path.basename(processed_file_path))
+        
         else:
             return render_template('index.html', message="Please upload CSV or XLSX files only")
+    
     return render_template('index.html', message="Upload a CSV or XLSX file")
 
 if __name__ == '__main__':
