@@ -1,44 +1,115 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>CSV Processor</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leads CSV Conversion Tool</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
-      .card-header {
-        background-color: #007bff;
-        color: white;
-      }
-      .instructions {
-        margin-left: 15px;
-        margin-top: 20px;
-      }
+        .card-header {
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+        }
+        .instructions {
+            margin-left: 15px;
+            margin-top: 20px;
+            font-size: 1.1rem;
+        }
+        .message {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            text-align: center;
+        }
+        .success-message {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .error-message {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .file-upload-form {
+            max-width: 500px;
+            margin: auto;
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div class="container mt-5">
-      <div class="card">
-        <div class="card-header">
-          <h1 class="card-title">Leads CSV Conversion Tool</h1>
-        </div>
-        <div class="instructions">
-          <h5>How to use this tool:</h5>
-          <p>Please select one or more CSV files to upload. The files will be processed to add a combined address column called "full_address", and the processed CSV will be available for download.</p>
-        </div>
-        <div class="card-body d-flex justify-content-center">
-          <form method="post" enctype="multipart/form-data" class="w-30">
-            <div class="form-group">
-              <label for="files">Choose CSV files</label>
-              <input type="file" class="form-control-file" id="files" name="files[]" multiple>
+        <div class="card file-upload-form">
+            <div class="card-header">
+                <h1 class="card-title mb-0">Leads CSV Conversion Tool</h1>
             </div>
-            <button type="submit" class="btn btn-primary btn-block">Upload</button>
-          </form>
+            <div class="card-body">
+                <div class="instructions">
+                    <h5>How to use this tool:</h5>
+                    <p>Please select one or more CSV files to upload. The files will be processed to add a combined address column called "full_address", and the processed CSV will be available for download.</p>
+                </div>
+                <form id="uploadForm" method="post" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="files">Choose CSV files</label>
+                        <input type="file" class="form-control-file" id="files" name="files[]" multiple onclick="clearMessages()">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Upload</button>
+                </form>
+            </div>
+            <div id="successMessage" class="message success-message">
+                <strong>File downloaded successfully!</strong>
+            </div>
+            <div id="errorMessage" class="message error-message">
+                <strong>Error downloading file. Please try again.</strong>
+            </div>
         </div>
-      </div>
     </div>
+
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  </body>
+    <script>
+        function clearMessages() {
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            var form = this;
+            var formData = new FormData(form);
+            
+            fetch('/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'converted_file.csv';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                
+                document.getElementById('successMessage').style.display = 'block';
+                form.reset();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('errorMessage').style.display = 'block';
+            });
+        });
+    </script>
+</body>
 </html>
